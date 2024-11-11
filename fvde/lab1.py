@@ -1,6 +1,10 @@
 import json
 import sys
 
+def getIndecesFromTable(num, table):
+    index = int(num, 2)
+    return table[index]
+
 def getIndesFromTable(num1, num2):
     if (num1 == '0' and num2 == '0'):
         return 0
@@ -28,13 +32,20 @@ class LogicGate:
 
         nums = [format(num, 'b').zfill(self.all) for num in inputs]
         
-        result = nums[0]
-        for i in range(1, len(nums)):
-            k = ''
-            for j in range(self.all):
-                index = getIndesFromTable(result[j], nums[i][j])
-                k += str(self.table[index])
-            result = k
+        result = ''
+
+        for j in range(len(nums[0])):
+            num = ''
+            for i in range(self.inw):
+                num += nums[i][j]
+            result += str(getIndecesFromTable(num, self.table))
+        
+        # for i in range(1, len(nums)):
+        #     k = ''
+        #     for j in range(self.all):
+        #         index = getIndesFromTable(result[j], nums[i][j])
+        #         k += str(self.table[index])
+        #     result = k
 
         return int(result, 2)
 
