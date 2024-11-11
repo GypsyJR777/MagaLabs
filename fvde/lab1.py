@@ -5,17 +5,6 @@ def getIndecesFromTable(num, table):
     index = int(num, 2)
     return table[index]
 
-def getIndesFromTable(num1, num2):
-    if (num1 == '0' and num2 == '0'):
-        return 0
-    elif (num1 == '0' and num2 == '1'):
-        return 1
-    elif (num1 == '1' and num2 == '0'):
-        return 2
-    elif (num1 == '1' and num2 == '1'):
-        return 3
-    else: raise RuntimeError("False nums")
-
 class LogicGate:
     def __init__(self, inw, outw, table, all):
         self.inw = inw
