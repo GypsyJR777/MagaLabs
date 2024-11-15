@@ -1,10 +1,6 @@
 import json
 import sys
 
-def getIndecesFromTable(num, table):
-    index = int(num, 2)
-    return table[index]
-
 class LogicGate:
     def __init__(self, inw, outw, table, all):
         self.inw = inw
@@ -15,28 +11,28 @@ class LogicGate:
     def getOutw(self):
         return self.outw
 
+    def getIndecesFromTable(self, num, k):
+        index = int(num, 2)
+        return (self.table[index] >> k) & 1
+
     def compute(self, inputs):
         if len(inputs) != self.inw:
             raise ValueError(f"Expected {self.inw} inputs, got {len(inputs)}. Inputs: {inputs}")
 
         nums = [format(num, 'b').zfill(self.all) for num in inputs]
         
-        result = ''
+        results = []
 
-        for j in range(len(nums[0])):
-            num = ''
-            for i in range(self.inw):
-                num += nums[i][j]
-            result += str(getIndecesFromTable(num, self.table))
+        for k in range(self.outw):
+            result = ''
+            for j in range(len(nums[0])):
+                num = ''
+                for i in range(self.inw):
+                    num += nums[i][j]
+                result += str(self.getIndecesFromTable(num, k))
+            results.append(int(result, 2))
         
-        # for i in range(1, len(nums)):
-        #     k = ''
-        #     for j in range(self.all):
-        #         index = getIndesFromTable(result[j], nums[i][j])
-        #         k += str(self.table[index])
-        #     result = k
-
-        return int(result, 2)
+        return results
 
 def load_gates(gates_json, all):
     gates = {}
@@ -67,7 +63,7 @@ def compute_outputs(gates, schematic, inputs):
     while (len(results) < schematic["outw"]):
         for gate_name, gate_type in schematic['gates'].items():
             gate = gates[gate_type]
-            
+
             gate_inputs = []
             if (f"{gate_name}0" not in outputs):
                 for i in range(gate.inw):
@@ -76,14 +72,14 @@ def compute_outputs(gates, schematic, inputs):
                         gate_inputs.append(signals[driver_key])
                     elif schematic['drivers'][driver_key] in outputs:
                         gate_inputs.append(outputs[schematic['drivers'][driver_key]])
-                        
+
                 if (len(gate_inputs) == gate.inw):
                     outs = gate.compute(gate_inputs)
                     for i in range(gate.getOutw()):
-                        outputs[f"{gate_name}{i}"] = outs
+                        outputs[f"{gate_name}{i}"] = outs[i]
                 # Debug: Show computed output for this gate 
                 # print(f"Computed {gate_name}: {schematic['drivers'][f"{gate_name}{i}"]} with inputs {gate_inputs}")
-        
+
         for key in schematic['outputs']:
             if (key in outputs and key not in results): 
                 results[key] = outputs[key]
@@ -96,7 +92,7 @@ def main():
         print("Usage: <cmd> <in.json> <values.txt>")
         return
 
-    
+
     with open(sys.argv[1], 'r') as json_file:
         circuit_json = json.load(json_file)
 
