@@ -101,7 +101,7 @@ def main():
 
     with open(sys.argv[2], 'r') as values_file:
         input_values = [
-            int(line.strip(), 2**schematic["inw"]) for line in values_file
+            int(line.strip().replace("0x", ""), 2**schematic["inw"]) for line in values_file
         ]
 
     results = compute_outputs(gates, schematic, input_values)
