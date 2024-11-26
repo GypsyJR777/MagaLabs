@@ -77,11 +77,11 @@ def compute_outputs(gates, schematic, inputs):
                     outs = gate.compute(gate_inputs)
                     for i in range(gate.getOutw()):
                         outputs[f"{gate_name}{i}"] = outs[i]
-                # Debug: Show computed output for this gate 
+                # Debug: Show computed output for this gate
                 # print(f"Computed {gate_name}: {schematic['drivers'][f"{gate_name}{i}"]} with inputs {gate_inputs}")
 
         for key in schematic['outputs']:
-            if (key in outputs and key not in results): 
+            if (key in outputs and key not in results):
                 results[key] = outputs[key]
 
     return results
@@ -100,7 +100,9 @@ def main():
     gates = load_gates(circuit_json['gates'], schematic["inw"])
 
     with open(sys.argv[2], 'r') as values_file:
-        input_values = [int(line.strip(), 16) for line in values_file]
+        input_values = [
+            int(line.strip(), 2**schematic["inw"]) for line in values_file
+        ]
 
     results = compute_outputs(gates, schematic, input_values)
 
