@@ -54,7 +54,7 @@ def compute_outputs(gates, schematic, inputs):
     signals = {}
     for key, value in schematic["drivers"].items():
         if isinstance(value, int):
-            signals[key] = inputs[int(value)]
+            signals[key] = int(inputs[int(value - 1)])
 
     # Debug: Show initial input signals
     # print("Initial signals:", signals)
@@ -100,14 +100,22 @@ def main():
     gates = load_gates(circuit_json['gates'], schematic["inw"])
 
     with open(sys.argv[2], 'r') as values_file:
-        input_values = [
+        input_values_from_file = [
             int(line.strip().replace("0x", ""), 2**schematic["inw"]) for line in values_file
         ]
 
-    results = compute_outputs(gates, schematic, input_values)
+    input_values = []
+    for value in input_values_from_file:
+        input_values.append(str(format(value, 'b').zfill(schematic["inw"])))
 
-    for _, result in results.items():
-        print(f"0x{int(result):X}")
+    results = []
+    for value in input_values:
+        results.append(compute_outputs(gates, schematic, list(str(value)[::-1])))
+
+    for result in results:
+        print("Results: ")
+        for _, r in result.items():
+            print(f"0x{int(r):X}")
 
 if __name__ == "__main__":
     main()
