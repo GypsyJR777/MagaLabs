@@ -19,17 +19,16 @@ class LogicGate:
         if len(inputs) != self.inw:
             raise ValueError(f"Expected {self.inw} inputs, got {len(inputs)}. Inputs: {inputs}")
 
-        nums = [format(num, 'b').zfill(self.all) for num in inputs]
+        nums = [format(num, 'b') for num in inputs]
         
         results = []
 
         for k in range(self.outw):
             result = ''
-            for j in range(len(nums[0])):
-                num = ''
-                for i in range(self.inw):
-                    num += nums[i][j]
-                result += str(self.getIndecesFromTable(num, k))
+            num = ''
+            for i in range(self.inw):
+                num += nums[i]
+            result += str(self.getIndecesFromTable(num, k))
             results.append(int(result, 2))
         
         return results
@@ -99,23 +98,35 @@ def main():
     schematic = load_schematic(circuit_json['schematics'])
     gates = load_gates(circuit_json['gates'], schematic["inw"])
 
+    input_values_from_file = []
+
     with open(sys.argv[2], 'r') as values_file:
-        input_values_from_file = [
-            int(line.strip().replace("0x", ""), 2**schematic["inw"]) for line in values_file
-        ]
+        for line in values_file:
+            line.strip()
+            if ("0x" in line):
+                num = int(line.replace("0x", ""), 16)
+            else:
+                num = int(line)
+            
+            if(num > 2**schematic["inw"] - 1):
+                raise ValueError(f"Value {num} is out of range for {schematic['inw']} bits")
+                
+            input_values_from_file.append(num)
 
     input_values = []
     for value in input_values_from_file:
-        input_values.append(str(format(value, 'b').zfill(schematic["inw"])))
+        input_values.append(str(format(value, 'b').zfill(schematic["inw"]))[::-1])
 
     results = []
     for value in input_values:
-        results.append(compute_outputs(gates, schematic, list(str(value)[::-1])))
+        results.append(compute_outputs(gates, schematic, list(value)))
 
+    i = 0
     for result in results:
-        print("Results: ")
+        print(f"Results for {input_values_from_file[i]}: ")
         for _, r in result.items():
             print(f"0x{int(r):X}")
+        i += 1
 
 if __name__ == "__main__":
     main()
