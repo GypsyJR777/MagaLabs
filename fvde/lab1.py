@@ -53,7 +53,7 @@ def compute_outputs(gates, schematic, inputs):
     signals = {}
     for key, value in schematic["drivers"].items():
         if isinstance(value, int):
-            signals[key] = int(inputs[int(value - 1)])
+            signals[key] = int(inputs[int(value)])
 
     # Debug: Show initial input signals
     # print("Initial signals:", signals)
