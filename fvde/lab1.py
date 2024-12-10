@@ -59,7 +59,7 @@ def compute_outputs(gates, schematic, inputs):
     # print("Initial signals:", signals)
 
     outputs = {}
-    while (len(results) < schematic["outw"]):
+    while (len(results) < len(set(schematic['outputs']))):
         for gate_name, gate_type in schematic['gates'].items():
             gate = gates[gate_type]
 
@@ -123,12 +123,10 @@ def main():
 
     i = 0
     for result in results:
-        # print(f"Result for {input_values_from_file[i]}: ")
         res = ""
-        for _, r in result.items():
-            res += str(r)
-        res = res[::-1]
-        print(f"0x{int(res, 2):X}")
+        for key in schematic['outputs']:
+            res = str(result[key]) + res
+        print(f"Result for {input_values_from_file[i]}: 0x{int(res, 2):X}")
         i += 1
 
 if __name__ == "__main__":
