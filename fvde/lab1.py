@@ -123,9 +123,12 @@ def main():
 
     i = 0
     for result in results:
-        print(f"Results for {input_values_from_file[i]}: ")
+        # print(f"Result for {input_values_from_file[i]}: ")
+        res = ""
         for _, r in result.items():
-            print(f"0x{int(r):X}")
+            res += str(r)
+        res = res[::-1]
+        print(f"Result for {input_values_from_file[i]}: 0x{int(res, 2):X}")
         i += 1
 
 if __name__ == "__main__":
