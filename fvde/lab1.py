@@ -128,7 +128,7 @@ def main():
         for _, r in result.items():
             res += str(r)
         res = res[::-1]
-        print(f"Result for {input_values_from_file[i]}: 0x{int(res, 2):X}")
+        print(f"0x{int(res, 2):X}")
         i += 1
 
 if __name__ == "__main__":
