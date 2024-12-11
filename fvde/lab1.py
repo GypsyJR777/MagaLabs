@@ -126,7 +126,7 @@ def main():
         res = ""
         for key in schematic['outputs']:
             res = str(result[key]) + res
-        print(f"Result for {input_values_from_file[i]}: 0x{int(res, 2):X}")
+        print(f"0x{int(res, 2):X}")
         i += 1
 
 if __name__ == "__main__":
