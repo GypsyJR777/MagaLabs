@@ -82,6 +82,8 @@ def compute_outputs(gates, schematic, inputs):
         for key in schematic['outputs']:
             if (key in outputs and key not in results):
                 results[key] = outputs[key]
+            elif isinstance(key, int):
+                results[key] = key
 
     return results
 
