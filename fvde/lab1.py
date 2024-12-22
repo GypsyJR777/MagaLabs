@@ -27,7 +27,7 @@ class LogicGate:
             result = ''
             num = ''
             for i in range(self.inw):
-                num += nums[i]
+                num = nums[i] + num
             result += str(self.getIndecesFromTable(num, k))
             results.append(int(result, 2))
         
