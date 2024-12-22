@@ -76,15 +76,14 @@ def compute_outputs(gates, schematic, inputs):
                     outs = gate.compute(gate_inputs)
                     for i in range(gate.getOutw()):
                         outputs[f"{gate_name}{i}"] = outs[i]
-                # Debug: Show computed output for this gate
-                # print(f"Computed {gate_name}: {schematic['drivers'][f"{gate_name}{i}"]} with inputs {gate_inputs}")
 
         for key in schematic['outputs']:
             if (key in outputs and key not in results):
                 results[key] = outputs[key]
-            elif isinstance(key, int):
-                results[key] = key
+            elif (isinstance(key, int) and key not in results):
+                results[key] = int(inputs[int(key)])
 
+    # print(outputs)
     return results
 
 
@@ -123,13 +122,14 @@ def main():
     for value in input_values:
         results.append(compute_outputs(gates, schematic, list(value)))
 
-    i = 0
+    # print(results)
     for result in results:
         res = ""
         for key in schematic['outputs']:
             res = str(result[key]) + res
+            # print(f"{key} = {result[key]} : {res}")
+        # print(f"{res} = 0x{int(res, 2):X}")
         print(f"0x{int(res, 2):X}")
-        i += 1
 
 if __name__ == "__main__":
     main()
