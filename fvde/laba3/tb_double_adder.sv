@@ -73,19 +73,19 @@ module tb_double_adder;
 always @(posedge clk)
   begin
         if (rst) begin
-            input_a_stb <= 0;
-            input_b_stb <= 0;
-            output_z_ack <= 0;
-            input_a <= 64'b0;
-            input_b <= 64'b0;
+            input_a_stb = 0;
+            input_b_stb = 0;
+            output_z_ack = 0;
+            input_a = 64'b0;
+            input_b = 64'b0;
         end else begin
             if (output_z_stb && !output_z_ack) begin
                 iteration_count <= iteration_count + 1;
                 output_z_ack <= 1'b1;
-                $display("Operand A: %h, Operand B: %h", last_input_a, last_input_b);
+                reference_adder(input_a, input_b, reference_result);
                 $display("DUT Result: %h, C++ result: %h", output_z, reference_result);
-                operand_a_real = $bitstoreal({32'b0, last_input_a}); // Для корректности double (64 бит)
-                operand_b_real = $bitstoreal({32'b0, last_input_b});
+                operand_a_real = $bitstoreal({32'b0, input_a}); // Для корректности double (64 бит)
+                operand_b_real = $bitstoreal({32'b0, input_b});
                 result_real = $bitstoreal({32'b0, output_z});
                 $display("REAL: Operand A: %e, Operand B: %e, Result DUT: %e, Result C++: %e", 
                   operand_a_real, operand_b_real, result_real, $bitstoreal({32'b0, reference_result})
@@ -100,36 +100,16 @@ always @(posedge clk)
         end
     
         if (!input_a_stb && !input_b_stb && !output_z_ack) begin
-                input_a_stb <= 1'b1;
-                input_b_stb <= 1'b1;
+                input_a_stb = 1'b1;
+                input_b_stb = 1'b1;
                 input_a = {$random(), $random()};
                 input_b = {$random(), $random()};
-                reference_adder(input_a, input_b, reference_result);
-                last_input_a <= input_a;
-                last_input_b <= input_b;
+                last_input_a = input_a;
+                last_input_b = input_b;
         end else if (input_a_ack && input_b_ack) begin
                 input_a_stb <= 1'b0; 
                 input_b_stb <= 1'b0; 
         end
-
-
-      // random_operand_a = {$random, $random};
-      // random_operand_b = {$random, $random}; 
-      // input_a = random_operand_a;
-      // input_b = random_operand_b;
-      // // Wait for DUT result
-      // stb <= $random%2;
-      //  if (output_z_stb) begin
-      //       output_z_ack <= 1'b1;
-
-      //     end
-      //   else output_z_ack <= 1'b0;
-
-      // // Display results
-      // if (output_z_stb) begin
-      //   $display("Operand A: %h, Operand B: %h", input_a, input_b);
-      //   $display("DUT Result: %h", output_z);
-      // end
   end
 
 endmodule

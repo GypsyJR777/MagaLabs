@@ -20,7 +20,7 @@ module tb_double_adder;
   wire input_b_ack;
   reg  start;
   // Instantiate the DUT
-  double_addadder dut (
+  double_adder dut (
     .clk(clk),
     .rst(rst),
     .input_a(input_a),
