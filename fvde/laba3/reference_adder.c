@@ -15,6 +15,6 @@ void reference_adder(long long a, long long b, long long *result) {
     *result = *(long long*)&res;
 
     // Optional: Print debug information
-    printf("Reference Adder: Operand A = %lf, Operand B = %lf, Result = %lf\n",
+    printf("Reference Adder: Operand A = %e, Operand B = %e, Result = %e\n",
            operand_a, operand_b, res);
 }
