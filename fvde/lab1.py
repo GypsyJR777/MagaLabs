@@ -109,8 +109,8 @@ def main():
             else:
                 num = int(line)
             
-            if(num > 2**schematic["inw"] - 1):
-                raise ValueError(f"Value {num} is out of range for {schematic['inw']} bits")
+            #if(num > 2**schematic["inw"] - 1):
+             #   raise ValueError(f"Value {num} is out of range for {schematic['inw']} bits")
                 
             input_values_from_file.append(num)
 
