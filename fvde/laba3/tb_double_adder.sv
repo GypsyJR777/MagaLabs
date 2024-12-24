@@ -19,6 +19,7 @@ module tb_double_adder;
   logic output_z_stb;
   logic input_a_ack;
   logic input_b_ack;
+  logic[31:0] first;
 
   // Variables
   logic [63:0] random_operand_a;
@@ -102,8 +103,9 @@ always @(posedge clk)
         if (!input_a_stb && !input_b_stb && !output_z_ack) begin
                 input_a_stb = 1'b1;
                 input_b_stb = 1'b1;
-                input_a = {$random(), $random()};
-                input_b = {$random(), $random()};
+                first = $random();
+                input_a = {first, $random()};
+                input_b = {first, $random()};
                 last_input_a = input_a;
                 last_input_b = input_b;
         end else if (input_a_ack && input_b_ack) begin
