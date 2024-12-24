@@ -50,10 +50,10 @@ module tb_double_adder;
   );
 
   initial begin
-    clk  <= 1'b0;
-    rst  <= 1'b1;
-    #50 rst <= 1'b0;
-    iteration_count <= 0;
+    clk  = 1'b0;
+    rst  = 1'b1;
+    #50 rst = 1'b0;
+    iteration_count = 0;
   end
     
   initial begin
@@ -81,8 +81,8 @@ always @(posedge clk)
             input_b = 64'b0;
         end else begin
             if (output_z_stb && !output_z_ack) begin
-                iteration_count <= iteration_count + 1;
-                output_z_ack <= 1'b1;
+                iteration_count = iteration_count + 1;
+                output_z_ack = 1'b1;
                 reference_adder(input_a, input_b, reference_result);
                 $display("DUT Result: %h, C++ result: %h", output_z, reference_result);
                 operand_a_real = $bitstoreal({32'b0, input_a}); // Для корректности double (64 бит)
@@ -109,8 +109,8 @@ always @(posedge clk)
                 last_input_a = input_a;
                 last_input_b = input_b;
         end else if (input_a_ack && input_b_ack) begin
-                input_a_stb <= 1'b0; 
-                input_b_stb <= 1'b0; 
+                input_a_stb = 1'b0; 
+                input_b_stb = 1'b0; 
         end
   end
 
