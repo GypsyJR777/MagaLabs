@@ -272,3 +272,49 @@ new_cols = [
 ]
 createHeatMap(new_cols, df)
 
+for col in df.columns:
+    if col not in new_cols:
+        plt.figure(figsize=(10, 6))
+        sns.barplot(
+            x=df[col].value_counts().values,
+            y=df[col].value_counts().index,
+            palette='viridis',
+            edgecolor='black'
+        )
+        # Настройка осей и заголовка
+        plt.title(f'{col}', fontsize=16, pad=20)
+        plt.xlabel('Количество', fontsize=12)
+        plt.ylabel(f'{col}', fontsize=12)
+        plt.xticks(fontsize=10)
+        plt.yticks(fontsize=10)
+
+        # Добавление значений на столбцы
+        for i, value in enumerate(df[col].value_counts().values):
+            plt.text(value, i, f' {value}', va='center', fontsize=10)
+
+        plt.tight_layout()
+        plt.show()
+
+
+for col in df.columns:
+    print(f'{col} : {df[col].value_counts(dropna=False).head(1).index[0]}')
+
+
+# Диаграмма возрастов
+plt.figure(figsize=(10, 6))
+sns.barplot(
+            x=df['age'].value_counts().index,
+            y=df['age'].value_counts().values,
+            palette='viridis',
+            edgecolor='black'
+)
+        # Настройка осей и заголовка
+plt.title('age', fontsize=16, pad=20)
+plt.xlabel('Количество', fontsize=12)
+plt.ylabel('age', fontsize=12)
+plt.xticks(fontsize=10)
+plt.yticks(fontsize=10)
+for i, value in enumerate(df['age'].value_counts().values):
+    plt.text(value, i, value, va='center', fontsize=10)
+plt.tight_layout()
+plt.show()
