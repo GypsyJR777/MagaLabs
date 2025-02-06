@@ -318,3 +318,25 @@ for i, value in enumerate(df['age'].value_counts().values):
     plt.text(value, i, value, va='center', fontsize=10)
 plt.tight_layout()
 plt.show()
+print(f'Средний возраст: {np.mean(df['age'])}')
+
+
+# Посмотрим на наш датафрейм
+print(df)
+
+
+# Перевод категориальных переменных в целочисленные
+education_sex = ['SEX', 'EDUCATION']
+data = []
+for col in df.columns:
+    if (col in education_sex):
+        data = []
+        for val in df[col].unique():
+            if(val == 'Высшее/Второе высшее/Ученая степень'):
+                continue
+            data.append(val)
+        for i in range(len(data)):
+            print(f'{i} : {data[i]}')
+            if(data[i] == 'высшее'):
+                df.replace([data[i], 'Высшее/Второе высшее/Ученая степень'], i, inplace=True)
+            df[data[i]]
