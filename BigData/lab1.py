@@ -6,6 +6,15 @@ import seaborn as sns
 from tabulate import tabulate
 import matplotlib.pyplot as plt
 from matplotlib.colors import LinearSegmentedColormap
+import scipy
+from sklearn import preprocessing
+from sklearn.cluster import KMeans
+from sklearn.metrics import silhouette_score
+from sklearn.metrics import davies_bouldin_score
+from sklearn.metrics import calinski_harabasz_score
+from scipy.spatial.distance import cdist
+from sklearn.decomposition import PCA, TruncatedSVD
+
 
 pd.set_option('display.max_columns', None)
 
@@ -75,7 +84,7 @@ def moreStat(df):
     return row
 
 # Загрузка данных
-df_original = pd.read_csv('HSE/BigData/HW1_var_8.csv', sep=';', encoding='utf-8')
+df_original = pd.read_csv('DZ1\\HW1_var_8.csv', sep=';', encoding='utf-8')
 
 df = df_original
 # Убираем столбец варианта
@@ -320,9 +329,8 @@ plt.tight_layout()
 plt.show()
 print(f'Средний возраст: {np.mean(df['age'])}')
 
-
 # Посмотрим на наш датафрейм
-print(df)
+print(tabulate(df, headers='keys', tablefmt='psql'))
 
 
 # Перевод категориальных переменных в целочисленные
@@ -338,5 +346,129 @@ for col in df.columns:
         for i in range(len(data)):
             print(f'{i} : {data[i]}')
             if(data[i] == 'высшее'):
-                df.replace([data[i], 'Высшее/Второе высшее/Ученая степень'], i, inplace=True)
-            df[data[i]]
+                df[col].replace([data[i], 'Высшее/Второе высшее/Ученая степень'], i, inplace=True)
+            df[col].replace([data[i]], i, inplace=True)
+
+# One-Hot encoding
+# Список колонок для кодирования
+columns_to_encode = [
+    'INCOME_BASE_TYPE', 
+    'CREDIT_PURPOSE', 
+    'EMPL_TYPE', 
+    'EMPL_SIZE',
+    'EMPL_PROPERTY', 
+    'EMPL_FORM', 
+    'FAMILY_STATUS'
+]
+
+# Выполнение One-Hot Encoding
+df_encoded = pd.get_dummies(
+    data=df,
+    columns=columns_to_encode,
+    prefix=columns_to_encode,  # Префиксы для новых колонок
+    prefix_sep='_',            # Разделитель префикса и значения
+    drop_first=False,          # Не удалять первую категорию
+    dtype=int                  # Тип данных новых колонок
+)
+
+# Просмотр результата
+print(f"Новые размеры датафрейма: {df_encoded.shape}")
+
+# Посмотрим на наш датафрейм
+print(tabulate(df_encoded, headers='keys', tablefmt='psql'))
+
+# Метод локтя
+results_db_kmeans = {}
+
+for i in range(2, 16):
+
+    kmeans = KMeans(n_clusters = i)
+    labels = kmeans.fit_predict(df_encoded)
+
+    db_index = davies_bouldin_score(df_encoded, labels)
+    results_db_kmeans.update({i: db_index})
+
+plt.figure(figsize=(10, 6))
+
+plt.plot(list(results_db_kmeans.keys()), list(results_db_kmeans.values()))
+
+plt.xticks(np.arange(2, 16, step = 1))
+plt.xlabel('Number of clusters')
+plt.ylabel('Davies-Boulding Index')
+plt.title('Davies-Boulding Index for different number of clusters (K-means)')
+plt.show()
+
+# K-means
+Y_pca = PCA(n_components=3).fit_transform(df_encoded);
+K = 3
+kmeanModel = KMeans(n_clusters=K).fit(df_encoded)
+np.random.seed(21)
+colors = np.sqrt(np.random.randint(0,255, size=(K, 3))/255)
+c_arr = np.array(list(map(lambda x: colors[x], list(kmeanModel.labels_))))
+
+plt.figure(figsize=(16,5));
+plt.title(f'PCA (K-means) for {K}')
+plt.scatter(Y_pca[:, 0], Y_pca[:, 1], c=c_arr);
+plt.show()
+
+K = 3
+kmeanModel = KMeans(n_clusters=K).fit(df_encoded)
+np.random.seed(21)
+colors = np.sqrt(np.random.randint(0,255, size=(K, 3))/255)
+c_arr = np.array(list(map(lambda x: colors[x], list(kmeanModel.labels_))))
+
+plt.figure(figsize=(16,5));
+plt.title(f'PCA (K-means) for {K}')
+plt.scatter(Y_pca[:, 0], Y_pca[:, 1], c=c_arr);
+plt.show()
+
+centroids = kmeanModel.cluster_centers_
+labels = kmeanModel.labels_
+k_df = df_encoded
+k_df['Labels'] = kmeanModel.labels_
+
+k_df_n = []
+k_df_n.append(k_df[(k_df['Labels'] == 0)])
+k_df_n.append(k_df[(k_df['Labels'] == 1)])
+k_df_n.append(k_df[(k_df['Labels'] == 2)])
+k_df_n.append(k_df[(k_df['Labels'] == 3)])
+k_df_n.append(k_df[(k_df['Labels'] == 4)])
+
+print('Segment 1: ', len(k_df_n[0]))
+print('Segment 2: ', len(k_df_n[1]))
+print('Segment 3: ', len(k_df_n[2]))
+print('Segment 4: ', len(k_df_n[3]))
+print('Segment 5: ', len(k_df_n[4]))
+print('df: ', len(k_df))
+
+print(tabulate(k_df.head(), headers='keys', tablefmt='psql'))
+#сводная таблица данных по всем кластерам
+k_df.to_excel('DZ1/5_klasters.xlsx')
+
+data = []
+for column in k_df:
+    if any(col in column for col in new_cols):
+        data.append(
+            [column] + 
+            [np.mean(k_df_n[0][column])] + 
+            [np.mean(k_df_n[1][column])] + 
+            [np.mean(k_df_n[2][column])] + 
+            [np.mean(k_df_n[3][column])] + 
+            [np.mean(k_df_n[4][column])]
+            )
+print(tabulate(data, headers=['Column', '1', '2', '3', '4', '5'], tablefmt='orgtbl'))
+
+data = []
+for column in k_df:
+    if all(col not in column for col in new_cols):
+        data.append(
+            [column] + 
+            [np.mean(k_df_n[0][column])] + 
+            [np.mean(k_df_n[1][column])] + 
+            [np.mean(k_df_n[2][column])] + 
+            [np.mean(k_df_n[3][column])] + 
+            [np.mean(k_df_n[4][column])]
+            )
+print(tabulate(data, headers=['Column', '1', '2', '3', '4', '5'], tablefmt='orgtbl'))
+
+
