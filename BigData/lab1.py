@@ -6,17 +6,19 @@ import seaborn as sns
 from tabulate import tabulate
 import matplotlib.pyplot as plt
 from matplotlib.colors import LinearSegmentedColormap
-import scipy
-from sklearn import preprocessing
 from sklearn.cluster import KMeans
-from sklearn.metrics import silhouette_score
 from sklearn.metrics import davies_bouldin_score
-from sklearn.metrics import calinski_harabasz_score
-from scipy.spatial.distance import cdist
-from sklearn.decomposition import PCA, TruncatedSVD
+from sklearn.metrics import accuracy_score, classification_report
+from sklearn.model_selection import train_test_split
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.tree import plot_tree
+from sklearn.decomposition import PCA
 
 
 pd.set_option('display.max_columns', None)
+
+# Загрузка данных
+df_original = pd.read_csv('HW1_var_8.csv', sep=';', encoding='utf-8')
 
 def createHeatMap(cols, df): 
     new_df = df[cols].fillna(df[cols].median())
@@ -82,9 +84,6 @@ def moreStat(df):
         round(df.isna().sum() / len(df) * 100, 1)
         ]
     return row
-
-# Загрузка данных
-df_original = pd.read_csv('DZ1\\HW1_var_8.csv', sep=';', encoding='utf-8')
 
 df = df_original
 # Убираем столбец варианта
@@ -331,6 +330,7 @@ print(f'Средний возраст: {np.mean(df['age'])}')
 
 # Посмотрим на наш датафрейм
 print(tabulate(df, headers='keys', tablefmt='psql'))
+df.to_excel("converted_dataset.xlsx")
 
 
 # Перевод категориальных переменных в целочисленные
@@ -376,6 +376,7 @@ print(f"Новые размеры датафрейма: {df_encoded.shape}")
 
 # Посмотрим на наш датафрейм
 print(tabulate(df_encoded, headers='keys', tablefmt='psql'))
+df_encoded.to_excel("endoded_dataset.xlsx")
 
 # Метод локтя
 results_db_kmeans = {}
@@ -411,17 +412,6 @@ plt.title(f'PCA (K-means) for {K}')
 plt.scatter(Y_pca[:, 0], Y_pca[:, 1], c=c_arr);
 plt.show()
 
-K = 3
-kmeanModel = KMeans(n_clusters=K).fit(df_encoded)
-np.random.seed(21)
-colors = np.sqrt(np.random.randint(0,255, size=(K, 3))/255)
-c_arr = np.array(list(map(lambda x: colors[x], list(kmeanModel.labels_))))
-
-plt.figure(figsize=(16,5));
-plt.title(f'PCA (K-means) for {K}')
-plt.scatter(Y_pca[:, 0], Y_pca[:, 1], c=c_arr);
-plt.show()
-
 centroids = kmeanModel.cluster_centers_
 labels = kmeanModel.labels_
 k_df = df_encoded
@@ -431,19 +421,15 @@ k_df_n = []
 k_df_n.append(k_df[(k_df['Labels'] == 0)])
 k_df_n.append(k_df[(k_df['Labels'] == 1)])
 k_df_n.append(k_df[(k_df['Labels'] == 2)])
-k_df_n.append(k_df[(k_df['Labels'] == 3)])
-k_df_n.append(k_df[(k_df['Labels'] == 4)])
 
 print('Segment 1: ', len(k_df_n[0]))
 print('Segment 2: ', len(k_df_n[1]))
 print('Segment 3: ', len(k_df_n[2]))
-print('Segment 4: ', len(k_df_n[3]))
-print('Segment 5: ', len(k_df_n[4]))
 print('df: ', len(k_df))
 
 print(tabulate(k_df.head(), headers='keys', tablefmt='psql'))
 #сводная таблица данных по всем кластерам
-k_df.to_excel('DZ1/5_klasters.xlsx')
+k_df.to_excel('3_klasters.xlsx')
 
 data = []
 for column in k_df:
@@ -452,11 +438,9 @@ for column in k_df:
             [column] + 
             [np.mean(k_df_n[0][column])] + 
             [np.mean(k_df_n[1][column])] + 
-            [np.mean(k_df_n[2][column])] + 
-            [np.mean(k_df_n[3][column])] + 
-            [np.mean(k_df_n[4][column])]
+            [np.mean(k_df_n[2][column])]
             )
-print(tabulate(data, headers=['Column', '1', '2', '3', '4', '5'], tablefmt='orgtbl'))
+print(tabulate(data, headers=['Column', '1', '2', '3'], tablefmt='orgtbl'))
 
 data = []
 for column in k_df:
@@ -465,10 +449,54 @@ for column in k_df:
             [column] + 
             [np.mean(k_df_n[0][column])] + 
             [np.mean(k_df_n[1][column])] + 
-            [np.mean(k_df_n[2][column])] + 
-            [np.mean(k_df_n[3][column])] + 
-            [np.mean(k_df_n[4][column])]
+            [np.mean(k_df_n[2][column])]
             )
-print(tabulate(data, headers=['Column', '1', '2', '3', '4', '5'], tablefmt='orgtbl'))
+print(tabulate(data, headers=['Column', '1', '2', '3'], tablefmt='orgtbl'))
 
 
+# Дерево
+all_col = k_df.columns
+all_col = all_col[0:len(all_col)-1]
+X = k_df[all_col]
+y = k_df['Labels']
+
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, 
+    test_size=0.2, 
+    random_state=42
+)
+# Создание модели
+clf = DecisionTreeClassifier(
+    max_depth=3,     # Максимальная глубина дерева
+    random_state=42
+)
+
+# Обучение модели
+clf.fit(X_train, y_train)
+# Предсказание на тестовых данных
+y_pred = clf.predict(X_test)
+
+# Точность классификации
+accuracy = accuracy_score(y_test, y_pred)
+print(f"Точность модели: {accuracy:.2f}")
+
+# Детальный отчет
+print("\nОтчет по классификации:")
+print(classification_report(y_test, y_pred))
+
+plt.figure(figsize=(15, 10))
+plot_tree(
+    clf, 
+    filled=True, 
+    feature_names=X.columns, 
+    class_names=[str(i) for i in clf.classes_]
+)
+plt.title("Дерево решений")
+plt.show()
+
+importance = pd.DataFrame(
+    {'Признак': X.columns, 'Важность': clf.feature_importances_}
+).sort_values('Важность', ascending=False)
+
+print("Важность признаков:")
+print(importance)
